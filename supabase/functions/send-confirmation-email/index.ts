@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending confirmation email to ${to}`);
     
     const { data, error } = await resend.emails.send({
-      from: "Contact Form <onboarding@resend.dev>",
+      from: "My Loveable App <onboarding@updates.loveable-resend.online>",
       to: [to],
       subject: "We received your message",
       html: `
