@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -159,8 +160,19 @@ export function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full md:w-auto">
-          Send Message
+        <Button 
+          type="submit" 
+          className="w-full md:w-auto"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? (
+            <>
+              <Loader2 className="animate-spin" />
+              Sending...
+            </>
+          ) : (
+            'Send Message'
+          )}
         </Button>
       </form>
     </Form>
