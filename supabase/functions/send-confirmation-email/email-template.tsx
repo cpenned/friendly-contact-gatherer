@@ -6,8 +6,8 @@ import {
   Html,
   Preview,
   Text,
-} from "npm:@react-email/components";
-import { render } from "npm:@react-email/render";
+} from "https://esm.sh/@react-email/components";
+import { render } from "https://esm.sh/@react-email/render";
 
 interface EmailTemplateProps {
   name: string;

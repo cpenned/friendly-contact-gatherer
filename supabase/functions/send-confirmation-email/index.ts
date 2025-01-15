@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend";
+import { Resend } from "https://esm.sh/resend";
 import { generateEmailHtml } from "./email-template.tsx";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -28,6 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending confirmation email to ${to}`);
     
     const html = await generateEmailHtml({ name });
+    console.log("Generated HTML:", html);
     
     const { data, error } = await resend.emails.send({
       from: "My Loveable App <onboarding@updates.loveable-resend.online>",
