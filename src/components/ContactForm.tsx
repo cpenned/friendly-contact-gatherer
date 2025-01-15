@@ -44,7 +44,11 @@ export function ContactForm() {
       // First, store the message in Supabase
       const { error: dbError } = await supabase
         .from("contact_messages")
-        .insert([values]);
+        .insert({
+          name: values.name,
+          email: values.email,
+          message: values.message,
+        });
 
       if (dbError) throw dbError;
 

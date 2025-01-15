@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const resend = new Resend(RESEND_API_KEY);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,31 +26,22 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log(`Sending confirmation email to ${to}`);
     
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: "Contact Form <onboarding@resend.dev>",
-        to: [to],
-        subject: "We received your message",
-        html: `
-          <h1>Thank you for contacting us, ${name}!</h1>
-          <p>We have received your message and will get back to you as soon as possible.</p>
-          <p>Best regards,<br>Your Team</p>
-        `,
-      }),
+    const { data, error } = await resend.emails.send({
+      from: "Contact Form <onboarding@resend.dev>",
+      to: [to],
+      subject: "We received your message",
+      html: `
+        <h1>Thank you for contacting us, ${name}!</h1>
+        <p>We have received your message and will get back to you as soon as possible.</p>
+        <p>Best regards,<br>Your Team</p>
+      `,
     });
 
-    if (!res.ok) {
-      const error = await res.text();
+    if (error) {
       console.error("Error sending email:", error);
-      throw new Error("Failed to send email");
+      throw error;
     }
 
-    const data = await res.json();
     console.log("Email sent successfully:", data);
 
     return new Response(JSON.stringify(data), {
