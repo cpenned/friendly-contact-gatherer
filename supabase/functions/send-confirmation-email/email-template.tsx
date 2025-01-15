@@ -6,8 +6,8 @@ import {
   Html,
   Preview,
   Text,
-} from "https://esm.sh/@react-email/components";
-import { render } from "https://esm.sh/@react-email/render";
+} from "https://esm.sh/@react-email/components@0.0.7";
+import { render } from "https://esm.sh/@react-email/render@0.0.7";
 
 interface EmailTemplateProps {
   name: string;
@@ -57,6 +57,12 @@ const text = {
   textAlign: "left" as const,
 };
 
-export const generateEmailHtml = (props: EmailTemplateProps) => {
-  return render(<EmailTemplate {...props} />);
+export const generateEmailHtml = async (props: EmailTemplateProps) => {
+  try {
+    const html = render(<EmailTemplate {...props} />);
+    return html;
+  } catch (error) {
+    console.error("Error generating email HTML:", error);
+    throw error;
+  }
 };
