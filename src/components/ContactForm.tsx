@@ -52,32 +52,56 @@ export function ContactForm() {
 
       if (dbError) throw dbError;
 
-      // Then, send the confirmation email
-      const { error: emailError } = await supabase.functions.invoke(
-        "send-confirmation-email",
-        {
-          body: {
-            to: values.email,
-            name: values.name,
-          },
-        }
-      );
+      // Then, send the confirmation email with retries
+      const maxRetries = 3;
+      let attempt = 0;
+      let emailError = null;
 
-      if (emailError) {
-        console.error("Error sending confirmation email:", emailError);
-        toast({
-          title: "Message sent!",
-          description:
-            "Your message was received, but we couldn't send you a confirmation email.",
-        });
-      } else {
-        toast({
-          title: "Message sent!",
-          description:
-            "Thank you for contacting us. We've sent you a confirmation email.",
-        });
+      while (attempt < maxRetries) {
+        try {
+          const { error } = await supabase.functions.invoke(
+            "send-confirmation-email",
+            {
+              body: {
+                to: values.email,
+                name: values.name,
+              },
+            }
+          );
+
+          if (!error) {
+            toast({
+              title: "Message sent!",
+              description:
+                "Thank you for contacting us. We've sent you a confirmation email.",
+            });
+            form.reset();
+            return;
+          }
+
+          emailError = error;
+          attempt++;
+          
+          if (attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        } catch (err) {
+          console.error(`Attempt ${attempt + 1} failed:`, err);
+          emailError = err;
+          attempt++;
+          
+          if (attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+        }
       }
 
+      console.error("Final email error after retries:", emailError);
+      toast({
+        title: "Message sent!",
+        description:
+          "Your message was received, but we couldn't send you a confirmation email.",
+      });
       form.reset();
     } catch (error) {
       console.error("Error submitting form:", error);

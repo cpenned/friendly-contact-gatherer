@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend";
-import { generateEmailHtml } from "./email-template.tsx";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
@@ -12,8 +11,8 @@ const resend = new Resend(RESEND_API_KEY);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 interface EmailRequest {
@@ -24,7 +23,10 @@ interface EmailRequest {
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    });
   }
 
   try {
@@ -36,14 +38,15 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Missing required fields: to and name are required");
     }
 
-    const html = await generateEmailHtml({ name });
-    console.log("Generated HTML template successfully");
-    
     const emailData = {
       from: "My Loveable App <onboarding@updates.loveable-resend.online>",
       to: [to],
       subject: "We received your message",
-      html: html,
+      html: `
+        <h1>Thank you for your message, ${name}!</h1>
+        <p>We have received your message and will get back to you soon.</p>
+        <p>Best regards,<br/>The Team</p>
+      `,
     };
     
     console.log("Attempting to send email with data:", JSON.stringify(emailData, null, 2));
