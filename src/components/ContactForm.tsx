@@ -41,17 +41,39 @@ export function ContactForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const { error } = await supabase
+      // First, store the message in Supabase
+      const { error: dbError } = await supabase
         .from("contact_messages")
         .insert([values]);
 
-      if (error) throw error;
+      if (dbError) throw dbError;
 
-      toast({
-        title: "Message sent!",
-        description: "Thank you for contacting us.",
-      });
-      
+      // Then, send the confirmation email
+      const { error: emailError } = await supabase.functions.invoke(
+        "send-confirmation-email",
+        {
+          body: {
+            to: values.email,
+            name: values.name,
+          },
+        }
+      );
+
+      if (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+        toast({
+          title: "Message sent!",
+          description:
+            "Your message was received, but we couldn't send you a confirmation email.",
+        });
+      } else {
+        toast({
+          title: "Message sent!",
+          description:
+            "Thank you for contacting us. We've sent you a confirmation email.",
+        });
+      }
+
       form.reset();
     } catch (error) {
       console.error("Error submitting form:", error);
